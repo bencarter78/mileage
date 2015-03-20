@@ -49,6 +49,7 @@ class MileageController extends Controller {
 		$file->move( storage_path( 'mileage/staff_id/bc' ), 'bc.xlsx' );
 		$dir     = storage_path( 'mileage/staff_id/bc/bc.xlsx' );
 		$mileage = Excel::load( $dir, function ( $reader ) { } )->get();
+		$batchRef = 'TP_ID_1_'.time();
 		foreach ( $mileage as $journey )
 		{
 			$entry = new Journey();
@@ -57,6 +58,7 @@ class MileageController extends Controller {
 				$entry->{$property} = $journey->{$property};
 			}
 			$entry->user_id = 1;
+			$entry->batch = $batchRef;
 
 			$destinations = '';
 			foreach ( $entry->getDestinationFields() as $field )
@@ -67,11 +69,10 @@ class MileageController extends Controller {
 				}
 			}
 
-			$entry->getJourneyPoints();
-	
-			$query      = "https://maps.googleapis.com/maps/api/directions/json?origin={$entry->from}+uk&destination={$entry->getDestination()}+uk&waypoints={$entry->getWaypoints()}&sensor=false&&units=imperial&key=AIzaSyBw3sbZtDnDQkqNZDVS53YGMSv4TwNV_rM";
+			$journeyPoints = $entry->getJourneyPoints();
+
+			$query      = "https://maps.googleapis.com/maps/api/directions/json?origin={$entry->from}+uk&destination={$journeyPoints['end']}+uk&waypoints={$journeyPoints['waypoints']}&sensor=false&&units=imperial&key=AIzaSyBw3sbZtDnDQkqNZDVS53YGMSv4TwNV_rM";
 			$directions = $this->client->get( $query );
-			//dd( $directions->json() );
 			$distance = 0;
 			foreach ( $directions->json()['routes'][0]['legs'] as $leg )
 			{

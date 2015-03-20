@@ -15,6 +15,7 @@ class CreateJourneysTable extends Migration {
 		Schema::create('journeys', function(Blueprint $table)
 		{
 			$table->increments('id');
+			$table->string('batch');
 			$table->integer('user_id')->unsigned();
 			$table->date("journey_date");
 			$table->string("from");

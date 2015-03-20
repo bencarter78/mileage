@@ -66,15 +66,27 @@ class Journey extends Model {
 	public function getJourneyPoints()
 	{
 		$destinations = array_reverse( $this->getDestinationFields() );
-		foreach ( $destinations as $location )
+		foreach ( $destinations as $key => $location )
 		{
 			if ( $this->{$location} != null )
 			{
 				$journey['end'] = $this->{$location};
-				continue;
+				unset( $destinations[ $key ] );
+				break;
 			}
-			dd( $destinations );
+			unset( $destinations[ $key ] );
 		}
+
+		$destinations = array_reverse( $destinations );
+
+		$waypoints = '';
+		foreach ( $destinations as $location )
+		{
+			$waypoints .= htmlentities( $this->{$location} . '+uk|' );
+		}
+		$journey['waypoints'] = substr( $waypoints, 0, - 1 );
+
+		return $journey;
 	}
 
 }
